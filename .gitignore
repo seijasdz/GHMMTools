@@ -1,0 +1,7 @@
+**/venv 
+**/*.txt
+**/*.exa
+**/*.json
+**/.idea
+**/__pycache__
+CDS_comp_50_50
