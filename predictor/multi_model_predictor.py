@@ -1,4 +1,7 @@
 from pomegranate import HiddenMarkovModel
+from constants import no_coding_names
+import numpy
+from converter_to import converter_to
 
 with open('../model_generator/partial_model_coding_to_donor_model0.json') as coding_to_donor_model_file0:
     coding_to_donor_model_json0 = coding_to_donor_model_file0.read()
@@ -111,11 +114,11 @@ def intron_predict(seq, intron_start, intron_len):
 
 
 def predict(seq, exon_len, intron_len):
-
     logp, path = start_model.viterbi(seq)
     start_path = [x[1].name for x in path]
     start_path = start_path[1:]
     longest_prediction = []
+    longest_with_end = []
     possible_predictions = []
     try:
         atg_index = start_path.index('start zone8')
@@ -136,16 +139,12 @@ def predict(seq, exon_len, intron_len):
                 last_coding_state, intron_start_in_this_path, exon_path, stop_path = rex
 
                 rei = intron_predict(seq, coding_start + intron_start_in_this_path, intron_len)
-                #print('exon_path', len(exon_path), exon_path)
-                #print(stop_path)
 
                 if stop_path:
-                    #print('stop_path', len(stop_path))
                     local_end = longest_prediction + stop_path
+                    longest_with_end = local_end
                     possible_predictions.append(local_end.copy())
-                    #print('local end', len(local_end), local_end)
                 longest_prediction += exon_path
-
 
                 if last_coding_state == 'coding state 2':
                     coding_state = 1
@@ -158,9 +157,7 @@ def predict(seq, exon_len, intron_len):
 
                 if rei:
                     intron_end, intron_path = rei
-                    #print('intron p', len(intron_path), intron_path)
                     longest_prediction += intron_path
-                    # print('happens', longest_prediction)
                     coding_start = coding_start + intron_start_in_this_path + intron_end # After AG
                 else:
                     break
@@ -170,4 +167,41 @@ def predict(seq, exon_len, intron_len):
     except ValueError as e:
         print(e)
 
-    return possible_predictions
+    return possible_predictions, longest_prediction, longest_with_end
+
+
+def convert_predictions_to_zones(seq):
+    cds = []
+
+    coding = False
+    last_cds_start = 0
+    for i, p in enumerate(seq):
+        if p not in no_coding_names and not coding:
+            coding = True
+            last_cds_start = i
+
+        if p in no_coding_names and coding:
+            coding = False
+            cds.append((last_cds_start, i))
+
+    return cds
+
+
+def get_testable_string(annotated_string):
+    l = [x[0] for x in annotated_string.lower().split()]
+    a = [x[1] for c, x in enumerate(annotated_string.split()) if c > 1]
+    two = converter_to(l, 2)
+    seq = numpy.array(two, numpy.unicode_)
+    return seq, a,''.join(l)
+
+
+if __name__ == '__main__':
+    with open('test_gene') as file:
+        line = file.readline()
+        formatted = converter_to(line, 2)
+        seq = numpy.array(formatted, numpy.unicode_)
+
+        ap, lp, lpwe = predict(seq, 6500, 7000)
+
+    cds = convert_predictions_to_zones(lpwe)
+    print(cds)

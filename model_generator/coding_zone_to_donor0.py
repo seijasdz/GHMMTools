@@ -29,63 +29,64 @@ def test_model(model):
         print(oks / (oks + noks))
 
 
-with open('../data extractors/exons_start_1.txt') as in_file:
-    total = []
-    for line in in_file:
-        no_p_line = line.replace('P', '').lower().replace('\n', '')
-        total.append(no_p_line)
+def train_and_test():
+    with open('../data extractors/exons_start_1.txt') as in_file:
+        total = []
+        for line in in_file:
+            no_p_line = line.replace('P', '').lower().replace('\n', '')
+            total.append(no_p_line)
 
-converted_total = [converter_to(x, 2) for x in total]
+    converted_total = [converter_to(x, 2) for x in total]
 
-matrixDonor0 = numpy.array(matrix_from_exa('../data extractors/new_donor1.exa'))
+    matrixDonor0 = numpy.array(matrix_from_exa('../data extractors/new_donor1.exa'))
 
-c0, c1, c2 = calculator.calculate_proba2('../data extractors/new_cuts.txt')
-print(c0.p, c1.p, c2.p)
-coding_state0 = State(DiscreteDistribution(c0.p), 'coding state 0')
-coding_state1 = State(DiscreteDistribution(c1.p), 'coding state 1')
-coding_state2 = State(DiscreteDistribution(c2.p), 'coding state 2')
+    c0, c1, c2 = calculator.calculate_proba2('../data extractors/new_cuts.txt')
+    print(c0.p, c1.p, c2.p)
+    coding_state0 = State(DiscreteDistribution(c0.p), 'coding state 0')
+    coding_state1 = State(DiscreteDistribution(c1.p), 'coding state 1')
+    coding_state2 = State(DiscreteDistribution(c2.p), 'coding state 2')
 
-donor0_data = classify(matrixDonor0, 2)
-donor0_states = sequence_state_factory(donor0_data, 'donor0')
+    donor0_data = classify(matrixDonor0, 2)
+    donor0_states = sequence_state_factory(donor0_data, 'donor0')
 
-post = State(DiscreteDistribution(equal_distribution), name='post')
+    post = State(DiscreteDistribution(equal_distribution), name='post')
 
-model = HiddenMarkovModel('coding to donor')
+    model = HiddenMarkovModel('coding to donor')
 
-model.add_state(coding_state0)
-model.add_state(coding_state1)
-model.add_state(coding_state2)
+    model.add_state(coding_state0)
+    model.add_state(coding_state1)
+    model.add_state(coding_state2)
 
-add_sequence(model, donor0_states)
+    add_sequence(model, donor0_states)
 
-model.add_state(post)
+    model.add_state(post)
 
-model.add_transition(model.start, coding_state0, 1)
+    model.add_transition(model.start, coding_state0, 1)
 
-model.add_transition(coding_state0, coding_state1,      0.6)
-model.add_transition(coding_state0, donor0_states[0],   0.4)
+    model.add_transition(coding_state0, coding_state1,      0.6)
+    model.add_transition(coding_state0, donor0_states[0],   0.4)
 
-model.add_transition(coding_state1, coding_state2,      0.6)
-model.add_transition(coding_state1, donor0_states[0],   0.4)
+    model.add_transition(coding_state1, coding_state2,      0.6)
+    model.add_transition(coding_state1, donor0_states[0],   0.4)
 
-model.add_transition(coding_state2, coding_state0,      0.6)
-model.add_transition(coding_state2, donor0_states[0],   0.4)
+    model.add_transition(coding_state2, coding_state0,      0.6)
+    model.add_transition(coding_state2, donor0_states[0],   0.4)
 
-model.add_transition(donor0_states[-1], post, 1)
+    model.add_transition(donor0_states[-1], post, 1)
 
-model.add_transition(post, post, 0.9)
-model.add_transition(post, model.end, 0.1)
+    model.add_transition(post, post, 0.9)
+    model.add_transition(post, model.end, 0.1)
 
-model.bake()
-test_model(model)
+    model.bake()
+    test_model(model)
 
-model.fit(converted_total,
-          transition_pseudocount=1,
-          emission_pseudocount=1,
-          verbose=True)
+    model.fit(converted_total,
+              transition_pseudocount=1,
+              emission_pseudocount=1,
+              verbose=True)
 
-test_model(model)
+    test_model(model)
 
 
-with open('partial_model_coding_to_donor_model0.json', 'w') as out:
-    out.write(model.to_json())
+    with open('partial_model_coding_to_donor_model0.json', 'w') as out:
+        out.write(model.to_json())

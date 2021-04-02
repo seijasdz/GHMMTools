@@ -78,15 +78,16 @@ def test_50(exon_len, intron_len, min_len,  max_len):
             annotated = parts[0]
             seq, a, _ = get_testable_string(annotated)
 
-            predictions = predict(seq, exon_len, intron_len)
-            #print('!', len(seq), len(a))
-            for i, pred in enumerate(predictions):
+            predictions, longest_pred, longest_with_end = predict(seq, exon_len, intron_len)
+            alt = [longest_with_end]
+            # print('!', len(seq), len(a))
+            for i, pred in enumerate(alt):
                 true_positives, true_negatives, fake_positives, fake_negatives = evaluate(pred, a)
                 if i == (len(predictions) - 1):
 
                     sensitivity = true_positives / (true_positives + fake_negatives)
                     specificity = true_positives / (true_positives + fake_positives)
-                    #print(sensitivity, specificity )
+                    # print(sensitivity, specificity )
 
                     sensitivity_acum += sensitivity
                     specificity_acum += specificity
@@ -113,7 +114,7 @@ def test_50(exon_len, intron_len, min_len,  max_len):
 if __name__ == '__main__':
     median_len = 7000
     #starts = int(median_len / 2)
-    starts = 5700
+    starts = 6000
     minl = 0
 
     """
@@ -132,7 +133,7 @@ if __name__ == '__main__':
 
             score = sensitivity_total + specificity_total + sens_mean + spec_mean
 
-            if score >= combined:
+            if score > combined:
                 combined = score
                 best_pair_combined = (exon_len, intron_len)
                 bests = (sensitivity_total, specificity_total, sens_mean, spec_mean)

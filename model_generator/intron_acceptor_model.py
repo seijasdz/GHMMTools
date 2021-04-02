@@ -61,16 +61,19 @@ def test(model):
                     cont_not_ok += 1
         print(cont_ok / (cont_not_ok + cont_ok))
 
-test(model)
 
-model.fit(converted_total,
-          transition_pseudocount=1,
-          emission_pseudocount=1,
-          verbose=True)
+def train_and_test():
+
+    test(model)
+
+    model.fit(converted_total,
+              transition_pseudocount=1,
+              emission_pseudocount=1,
+              verbose=True)
 
 
-test(model)
+    test(model)
 
 
-with open('partial_model_intron_acceptor_model.json', 'w') as out:
-    out.write(model.to_json())
+    with open('partial_model_intron_acceptor_model.json', 'w') as out:
+        out.write(model.to_json())

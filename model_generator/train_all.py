@@ -1,0 +1,18 @@
+import coding_zone_to_donor0
+import coding_zone_to_donor1
+import coding_zone_to_donor2
+import exon_stop_model0
+import exon_stop_model1
+import exon_stop_model2
+import intron_acceptor_model
+import start_zone_hmm
+
+coding_zone_to_donor0.train_and_test()
+coding_zone_to_donor1.train_and_test()
+coding_zone_to_donor2.train_and_test()
+exon_stop_model0.train_and_test()
+exon_stop_model1.train_and_test()
+exon_stop_model2.train_and_test()
+start_zone_hmm.train_and_test()
+intron_acceptor_model.train_and_test()
+

@@ -66,14 +66,15 @@ def test(new_model):
         print(ok_count / (ok_count + wring_count))
 
 
-test(model)
+def train_and_test():
+    test(model)
 
-model.fit(converted_total,
-          verbose=True,
-          transition_pseudocount=1,
-          emission_pseudocount=1)
+    model.fit(converted_total,
+              verbose=True,
+              transition_pseudocount=1,
+              emission_pseudocount=1)
 
-test(model)
+    test(model)
 
-with open('partial_model_coding_to_stop_model0.json', 'w') as out:
-    out.write(model.to_json())
+    with open('partial_model_coding_to_stop_model0.json', 'w') as out:
+        out.write(model.to_json())

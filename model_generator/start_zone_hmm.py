@@ -49,19 +49,20 @@ model.add_transition(back2, back2, 0.5)
 
 model.bake()
 
-test(model)
+def train_and_test():
+    test(model)
 
-lines = []
-with open('../data extractors/train_start2.exa') as fi:
-    for line in fi:
-        lines.append(converter_to(line.replace('\n', '')))
+    lines = []
+    with open('../data extractors/train_start2.exa') as fi:
+        for line in fi:
+            lines.append(converter_to(line.replace('\n', '')))
 
-model.fit(lines,
-          transition_pseudocount=1,
-          emission_pseudocount=1,
-          verbose=True)
+    model.fit(lines,
+              transition_pseudocount=1,
+              emission_pseudocount=1,
+              verbose=True)
 
-test(model)
+    test(model)
 
-with open('partial_model_start_model.json', 'w') as out:
-    out.write(model.to_json())
+    with open('partial_model_start_model.json', 'w') as out:
+        out.write(model.to_json())
